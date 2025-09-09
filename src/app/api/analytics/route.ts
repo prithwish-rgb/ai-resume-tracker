@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { Brain } from "lucide-react";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth-config";
 import { jobsCollection, interviewsCollection } from "@/lib/mongodb";
 
 export async function GET() {

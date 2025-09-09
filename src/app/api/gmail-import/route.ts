@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth-config";
 import { listRecentMessages } from "@/lib/gmail";
 import { parseJobFromUrlOrText } from "@/lib/utils";
 import { jobsCollection } from "@/lib/mongodb";
