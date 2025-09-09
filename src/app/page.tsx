@@ -1,103 +1,374 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { 
+  Briefcase, 
+  FileText, 
+  BarChart3, 
+  Brain, 
+  Users, 
+  TrendingUp,
+  Plus,
+  ExternalLink,
+  CheckCircle,
+  Clock,
+  XCircle
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { AnimatedHeadline } from "@/components/AnimatedHeadline";
+import { Hero } from "@/components/Hero";
+import { Marquee } from "@/components/Marquee";
+import { PageLoading, InlineLoading } from "@/components/ui/loading-spinner";
+
+interface Job {
+  _id: string;
+  title?: string;
+  company?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Analytics {
+  totals: {
+    total: number;
+    applied: number;
+    interview: number;
+    offer: number;
+    rejected: number;
+  };
+  metrics: {
+    applicationToInterviewRate: number;
+  };
+}
+
+export default function Dashboard() {
+  const { data: session, status } = useSession();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [demoMode, setDemoMode] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchJobs();
+      fetchAnalytics();
+    }
+    
+    // Fallback timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+    
+    return () => clearTimeout(timeout);
+  }, [status, loading]);
+
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch("/api/jobs");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setJobs(data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch jobs:", error);
+      // Set demo data on error
+      setJobs([
+        {
+          _id: "demo-1",
+          title: "Senior Software Engineer",
+          company: "Tech Corp",
+          status: "applied",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          _id: "demo-2", 
+          title: "Full Stack Developer",
+          company: "StartupXYZ",
+          status: "interview",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      ]);
+      setDemoMode(true);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const res = await fetch("/api/analytics");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setAnalytics(data);
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+      // Set demo analytics on error
+      setAnalytics({
+        totals: { total: 2, applied: 1, interview: 1, offer: 0, rejected: 0 },
+        metrics: { applicationToInterviewRate: 0.5 }
+      });
+      setDemoMode(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "applied": return <Clock className="w-4 h-4 text-blue-500" />;
+      case "interview": return <CheckCircle className="w-4 h-4 text-yellow-500" />;
+      case "offer": return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case "rejected": return <XCircle className="w-4 h-4 text-red-500" />;
+      default: return <Clock className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "applied": return "bg-blue-100 text-blue-800";
+      case "interview": return "bg-yellow-100 text-yellow-800";
+      case "offer": return "bg-green-100 text-green-800";
+      case "rejected": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  if (status === "loading" || loading) {
+    return <PageLoading text="Loading your dashboard..." />;
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6C63FF]/10 via-[#00C9A7]/10 to-[#6C63FF]/10">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Welcome to AI Resume Tracker</h1>
+            <p className="text-gray-600 mb-6">Sign in to start tracking your job applications and building your career</p>
+            <div className="space-y-4">
+              <Button asChild className="w-full">
+                <Link href="/auth/signin">Get Started</Link>
+              </Button>
+              <div className="text-sm text-gray-500">
+                <p>Having connection issues? <a href="/api/test-db" target="_blank" className="text-blue-600 hover:underline">Test Database Connection</a></p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+    </div>
+  );
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-[#6C63FF]/5 via-[#00C9A7]/5 to-[#6C63FF]/5">
+      <div className="w-full mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        {/* Demo Mode Banner */}
+        {demoMode && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <p className="text-yellow-800 text-sm">
+                <strong>Demo Mode:</strong> You're viewing sample data. To save your data, set up MongoDB Atlas and add MONGODB_URI to your .env.local file.
+              </p>
+            </div>
+          </div>
+        )}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Hero */}
+        <div className="mb-8">
+          <Hero />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {session?.user?.name}!
+          </h1>
+          <p className="text-gray-600">Track your job applications and accelerate your career</p>
+          <AnimatedHeadline />
+        </div>
+
+        <div className="mb-8">
+          <Marquee items={["1-click job logging", "AI apply/pass", "Tailored resumes", "Interview prep", "Company insights", "Outreach templates", "Offer coach"]} />
+              </div>
+
+        {/* Quick Stats */}
+        {analytics && (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <Card>
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Total Jobs</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{analytics.totals.total}</p>
+                  </div>
+                  <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-[#6C63FF]" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Applied</p>
+                    <p className="text-xl sm:text-2xl font-bold text-blue-600">{analytics.totals.applied}</p>
+                  </div>
+                  <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Interviews</p>
+                    <p className="text-xl sm:text-2xl font-bold text-yellow-600">{analytics.totals.interview}</p>
+                  </div>
+                  <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Offers</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">{analytics.totals.offer}</p>
+                  </div>
+                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          {/* Recent Jobs */}
+          <div className="lg:col-span-2 order-2 lg:order-1">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />
+                  Recent Job Applications
+                </CardTitle>
+                <Button asChild size="sm">
+                  <Link href="/jobs">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Job
+                  </Link>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {jobs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">No job applications yet</p>
+                    <Button asChild>
+                      <Link href="/jobs">Add Your First Job</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {jobs.slice(0, 5).map((job) => (
+                      <div key={job._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{job.title || "Untitled Position"}</h3>
+                          <p className="text-sm text-gray-600">{job.company || "Unknown Company"}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                            {job.status}
+                          </span>
+                          {getStatusIcon(job.status)}
+              </div>
+            </div>
+                    ))}
+                    {jobs.length > 5 && (
+                      <div className="text-center pt-4">
+                        <Button variant="outline" asChild>
+                          <Link href="/jobs">View All Jobs</Link>
+                        </Button>
+                      </div>
+                    )}
+              </div>
+            )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button asChild className="w-full justify-start">
+                  <Link href="/jobs">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Job
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/resumes">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Build Resume
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/interview-prep">
+                    <Brain className="h-4 w-4 mr-2" />
+                    Interview Prep
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/analytics">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    View Analytics
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* AI Recommendations */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5" />
+                  AI Insights
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>Tip:</strong> Tailor your resume for each application to increase your chances by 40%
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      <strong>Success:</strong> You have a {Math.round((analytics?.metrics.applicationToInterviewRate || 0) * 100)}% application-to-interview rate
+                    </p>
+                  </div>
+          </div>
+        </CardContent>
+      </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+

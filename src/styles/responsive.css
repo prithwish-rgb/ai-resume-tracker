@@ -1,0 +1,173 @@
+/* Mobile-first responsive utility styles */
+
+/* Base mobile styles */
+@layer utilities {
+  /* Container utilities */
+  .container-responsive {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1280px;
+  }
+  
+  /* Spacing utilities */
+  .spacing-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  .spacing-sm-responsive {
+    @apply p-2 sm:p-3 lg:p-4;
+  }
+  
+  /* Text utilities */
+  .text-responsive {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+  
+  .text-heading-responsive {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+  
+  .text-title-responsive {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+  
+  /* Grid utilities */
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .grid-responsive-4 {
+    @apply grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4;
+  }
+  
+  /* Gap utilities */
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  .gap-responsive-sm {
+    @apply gap-2 sm:gap-3 lg:gap-4;
+  }
+  
+  /* Button utilities */
+  .btn-responsive {
+    @apply px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base;
+  }
+  
+  /* Card utilities */
+  .card-responsive {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+  
+  /* Icon utilities */
+  .icon-responsive {
+    @apply h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6;
+  }
+  
+  .icon-responsive-lg {
+    @apply h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10;
+  }
+  
+  /* Form utilities */
+  .form-grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+  
+  /* Dialog utilities */
+  .dialog-responsive {
+    @apply max-w-sm sm:max-w-md lg:max-w-2xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto;
+  }
+  
+  /* Navigation utilities */
+  .nav-responsive {
+    @apply flex flex-col sm:flex-row gap-2 sm:gap-4;
+  }
+  
+  /* Hide/show utilities */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+  
+  .tablet-up {
+    @apply hidden md:block;
+  }
+  
+  /* Layout utilities */
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row gap-3 sm:gap-4;
+  }
+  
+  .flex-responsive-reverse {
+    @apply flex flex-col-reverse sm:flex-row gap-3 sm:gap-4;
+  }
+  
+  /* Viewport utilities */
+  .min-h-mobile {
+    min-height: calc(100vh - 60px);
+  }
+  
+  @media (min-width: 640px) {
+    .min-h-mobile {
+      min-height: calc(100vh - 80px);
+    }
+  }
+}
+
+/* Custom breakpoints for specific use cases */
+@media (max-width: 480px) {
+  .ultra-mobile-text {
+    @apply text-xs;
+  }
+  
+  .ultra-mobile-spacing {
+    @apply p-2;
+  }
+}
+
+/* Touch-friendly utilities */
+@layer utilities {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-spacing {
+    @apply p-3 sm:p-4;
+  }
+}
+
+/* Print utilities */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .high-contrast-border {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe\:animate-none {
+    animation: none !important;
+  }
+  
+  .motion-safe\:transition-none {
+    transition: none !important;
+  }
+}
