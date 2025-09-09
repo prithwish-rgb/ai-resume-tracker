@@ -176,7 +176,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               <p className="text-yellow-800 text-sm">
-                <strong>Demo Mode:</strong> You're viewing sample data. To save your data, set up MongoDB Atlas and add MONGODB_URI to your .env.local file.
+                <strong>Demo Mode:</strong> You&apos;re viewing sample data. To save your data, set up MongoDB Atlas and add MONGODB_URI to your .env.local file.
               </p>
             </div>
           </div>

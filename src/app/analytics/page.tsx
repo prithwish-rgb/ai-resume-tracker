@@ -435,7 +435,7 @@ export default function AnalyticsPage() {
                   
                   <div className="p-3 bg-orange-50 rounded-lg">
                     <p className="text-sm text-orange-800">
-                      <strong>Timing:</strong> You're most active on {weeklyActivity.length > 0 ? new Date(weeklyActivity[weeklyActivity.length - 1][0]).toLocaleDateString('en-US', { weekday: 'long' }) : 'weekdays'}
+                      <strong>Timing:</strong> You&apos;re most active on {weeklyActivity.length > 0 ? new Date(weeklyActivity[weeklyActivity.length - 1][0]).toLocaleDateString('en-US', { weekday: 'long' }) : 'weekdays'}
                     </p>
                   </div>
                 </div>

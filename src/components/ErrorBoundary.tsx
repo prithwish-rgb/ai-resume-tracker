@@ -54,7 +54,7 @@ const DefaultErrorFallback: React.FC<{ error?: Error; retry: () => void }> = ({ 
       </CardHeader>
       <CardContent className="text-center space-y-4">
         <p className="text-gray-600">
-          We encountered an unexpected error. Don't worry, your data is safe.
+          We encountered an unexpected error. Don&apos;t worry, your data is safe.
         </p>
         {error && process.env.NODE_ENV === 'development' && (
           <details className="text-left">
