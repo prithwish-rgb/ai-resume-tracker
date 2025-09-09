@@ -15,8 +15,8 @@ async function fetchNews(company: string) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions as any);
-  if (!((session?.user as any)?.id)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { company } = await req.json();
   if (!company) return NextResponse.json({ error: "Missing company" }, { status: 400 });
   const news = await fetchNews(company);
