@@ -3,8 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-config";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions as any);
-  if (!((session?.user as any)?.id)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { company, role, base, bonus, equity, location, target } = await req.json();
 
   const script = [

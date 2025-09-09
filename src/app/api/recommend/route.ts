@@ -18,9 +18,16 @@ function scoreMatch(resumeText: string, jobText: string) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions as any);
-  const userId = (session?.user as any)?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { jobDescription } = await req.json();
   if (!jobDescription) return NextResponse.json({ error: "Missing jobDescription" }, { status: 400 });

@@ -4,9 +4,16 @@ import { authOptions } from "@/lib/auth-config";
 import { jobsCollection, resumesCollection, interviewsCollection, debriefsCollection } from "@/lib/mongodb";
 
 export async function GET() {
-  const session = await getServerSession(authOptions as any);
-  const userId = (session?.user as any)?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const [jobs, resumes, interviews, debriefs] = await Promise.all([
     (await jobsCollection()).find({ userId }).toArray(),

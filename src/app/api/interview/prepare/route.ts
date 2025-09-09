@@ -19,8 +19,16 @@ function generateQuestions(jobDescription: string, resumeText: string) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions as any);
-  if (!((session?.user as any)?.id)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { jobDescription, resumeBlocks } = await req.json();
   if (!jobDescription) return NextResponse.json({ error: "Missing jobDescription" }, { status: 400 });
   const resumeText = (resumeBlocks || []).map((b: any) => b.content).join("\n");

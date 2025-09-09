@@ -6,9 +6,16 @@ import { parseJobFromUrlOrText } from "@/lib/utils";
 import { jobsCollection } from "@/lib/mongodb";
 
 export async function POST() {
-  const session = await getServerSession(authOptions as any);
-  const userId = (session?.user as any)?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const msgs = await listRecentMessages(10);
   const jobs = await jobsCollection();

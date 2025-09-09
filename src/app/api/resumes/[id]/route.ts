@@ -8,9 +8,16 @@ export async function GET(
   _req: Request, 
   context: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions as any);
-  const userId = (session?.user as any)?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   
   const params = await context.params;
   const resumes = await resumesCollection();
