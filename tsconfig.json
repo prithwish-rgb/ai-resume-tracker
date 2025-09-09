@@ -27,7 +27,7 @@
     },
 
     /* Suppress future deprecation warnings */
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
 
     /* Plugins (Next.js specific) */
     "plugins": [

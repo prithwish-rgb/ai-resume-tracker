@@ -108,7 +108,7 @@ export function useJobs(): UseJobsState & UseJobsActions {
           isSubmitting: false, 
           error: response.error || 'Failed to add job' 
         });
-        setLastFailedAction(() => addJob(formData));
+        setLastFailedAction(() => addJob(formData).then(() => {}));
         return false;
       }
     } catch (error) {
@@ -116,7 +116,7 @@ export function useJobs(): UseJobsState & UseJobsActions {
         isSubmitting: false, 
         error: error instanceof Error ? error.message : 'Failed to add job' 
       });
-      setLastFailedAction(() => addJob(formData));
+      setLastFailedAction(() => addJob(formData).then(() => {}));
       return false;
     }
   }, [updateState, fetchJobs]);
@@ -140,7 +140,7 @@ export function useJobs(): UseJobsState & UseJobsActions {
           isSubmitting: false, 
           error: response.error || 'Failed to update job' 
         });
-        setLastFailedAction(() => updateJob(id, updates));
+        setLastFailedAction(() => updateJob(id, updates).then(() => {}));
         return false;
       }
     } catch (error) {
@@ -148,7 +148,7 @@ export function useJobs(): UseJobsState & UseJobsActions {
         isSubmitting: false, 
         error: error instanceof Error ? error.message : 'Failed to update job' 
       });
-      setLastFailedAction(() => updateJob(id, updates));
+      setLastFailedAction(() => updateJob(id, updates).then(() => {}));
       return false;
     }
   }, [updateState, fetchJobs]);
@@ -168,14 +168,14 @@ export function useJobs(): UseJobsState & UseJobsActions {
         return true;
       } else {
         updateState({ error: response.error || 'Failed to delete job' });
-        setLastFailedAction(() => deleteJob(id));
+        setLastFailedAction(() => deleteJob(id).then(() => {}));
         return false;
       }
     } catch (error) {
       updateState({ 
         error: error instanceof Error ? error.message : 'Failed to delete job' 
       });
-      setLastFailedAction(() => deleteJob(id));
+      setLastFailedAction(() => deleteJob(id).then(() => {}));
       return false;
     }
   }, [updateState, fetchJobs]);

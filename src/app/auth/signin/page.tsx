@@ -1,10 +1,10 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function SignInPage() {
+function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -93,7 +93,7 @@ export default function SignInPage() {
           </div>
 
           <p className="mt-6 text-sm text-gray-300">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <a
               href="/auth/register"
               className="text-white font-semibold underline hover:text-gray-200"
@@ -104,5 +104,20 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen flex justify-center items-center bg-gradient-to-br from-[#6C63FF] via-[#00C9A7] to-[#6C63FF] text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto"></div>
+          <p className="mt-4 text-lg">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   );
 }
