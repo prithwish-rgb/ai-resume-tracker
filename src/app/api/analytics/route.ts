@@ -21,11 +21,25 @@ export async function GET() {
     const jobs = await jobsCollection();
     const interviews = await interviewsCollection();
 
-    const total = await jobs.countDocuments({ userId });
-    const applied = await jobs.countDocuments({ userId, status: "applied" });
-    const interview = await jobs.countDocuments({ userId, status: "interview" });
-    const offer = await jobs.countDocuments({ userId, status: "offer" });
-    const rejected = await jobs.countDocuments({ userId, status: "rejected" });
+    // Use aggregation to reduce database calls
+    const pipeline = [
+      { $match: { userId } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          applied: { $sum: { $cond: [{ $eq: ["$status", "applied"] }, 1, 0] } },
+          interview: { $sum: { $cond: [{ $eq: ["$status", "interview"] }, 1, 0] } },
+          offer: { $sum: { $cond: [{ $eq: ["$status", "offer"] }, 1, 0] } },
+          rejected: { $sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] } }
+        }
+      }
+    ];
+
+    const result = await jobs.aggregate(pipeline).toArray();
+    const stats = result[0] || { total: 0, applied: 0, interview: 0, offer: 0, rejected: 0 };
+    
+    const { total, applied, interview, offer, rejected } = stats;
 
     const appToInterviewRate = total ? (interview / Math.max(1, applied)) : 0;
 

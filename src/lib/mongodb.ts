@@ -2,12 +2,18 @@ import { MongoClient, Db, Collection } from "mongodb";
 
 const uri = process.env.MONGODB_URI as string | undefined;
 
-// Simple connection options that work with all MongoDB versions
+// Optimized connection options for better performance
 const options = {
-  serverSelectionTimeoutMS: 10000,
-  connectTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 15000, // Increased timeout
+  connectTimeoutMS: 15000, // Increased timeout
+  socketTimeoutMS: 30000, // Socket timeout
   maxPoolSize: 10,
+  minPoolSize: 1,
+  maxIdleTimeMS: 30000,
+  waitQueueTimeoutMS: 10000,
   retryWrites: true,
+  retryReads: true,
+  heartbeatFrequencyMS: 10000,
 };
 
 let client: MongoClient;
@@ -36,14 +42,26 @@ if (!uri) {
 
 export async function connectToDatabase(dbName?: string): Promise<Db> {
   if (!uri) {
-    throw new Error("MONGODB_URI is not set. Please add it to .env.local");
+    const message = "MONGODB_URI is not set. Please add it to .env.local";
+    console.error(message);
+    throw new Error(message);
   }
+  
   try {
+    console.log(`[MongoDB] Attempting to connect to database: ${dbName || 'default'}`);
+    const startTime = Date.now();
     const client = await clientPromise;
+    const connectTime = Date.now() - startTime;
+    console.log(`[MongoDB] Connected successfully in ${connectTime}ms`);
     return client.db(dbName);
   } catch (error) {
-    console.error("MongoDB connection failed:", error);
-    throw new Error("Failed to connect to database. Please check your MONGODB_URI in .env.local");
+    console.error("[MongoDB] Connection failed:", {
+      error: error instanceof Error ? error.message : error,
+      uri: uri ? `${uri.split('@')[0].split('//')[1]}@***` : 'undefined', // Log partial URI without credentials
+      dbName,
+      timestamp: new Date().toISOString()
+    });
+    throw new Error(`Failed to connect to database: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
