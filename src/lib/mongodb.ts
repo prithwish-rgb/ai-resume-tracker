@@ -17,7 +17,6 @@ const options = isProduction || isVercel ? {
   waitQueueTimeoutMS: 5000,
   retryWrites: true,
   retryReads: false,
-  bufferMaxEntries: 0, // Disable mongoose buffering
   heartbeatFrequencyMS: 30000,
 } : {
   // Development settings
