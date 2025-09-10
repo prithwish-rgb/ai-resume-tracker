@@ -2,11 +2,28 @@ import { MongoClient, Db, Collection } from "mongodb";
 
 const uri = process.env.MONGODB_URI as string | undefined;
 
-// Optimized connection options for better performance
-const options = {
-  serverSelectionTimeoutMS: 15000, // Increased timeout
-  connectTimeoutMS: 15000, // Increased timeout
-  socketTimeoutMS: 30000, // Socket timeout
+// Optimized connection options for serverless environments
+const isProduction = process.env.NODE_ENV === 'production';
+const isVercel = process.env.VERCEL === '1';
+
+const options = isProduction || isVercel ? {
+  // Serverless optimized settings
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 5000, 
+  socketTimeoutMS: 10000,
+  maxPoolSize: 1, // Single connection for serverless
+  minPoolSize: 0,
+  maxIdleTimeMS: 5000,
+  waitQueueTimeoutMS: 5000,
+  retryWrites: true,
+  retryReads: false,
+  bufferMaxEntries: 0, // Disable mongoose buffering
+  heartbeatFrequencyMS: 30000,
+} : {
+  // Development settings
+  serverSelectionTimeoutMS: 15000,
+  connectTimeoutMS: 15000,
+  socketTimeoutMS: 30000,
   maxPoolSize: 10,
   minPoolSize: 1,
   maxIdleTimeMS: 30000,
