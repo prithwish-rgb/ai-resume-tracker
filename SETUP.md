@@ -27,7 +27,7 @@ MONGODB_URI=mongodb://localhost:27017/ai-resume-tracker
 
 3. **Create `.env.local` file** in the project root:
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
 NEXTAUTH_SECRET=your-super-secret-key-here
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret

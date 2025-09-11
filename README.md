@@ -51,7 +51,7 @@ A modern, fully responsive web application built with Next.js 15+ that helps job
    Fill in your environment variables in `.env.local`:
    ```env
    # MongoDB Configuration
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
    
    # NextAuth Configuration
    NEXTAUTH_URL=http://localhost:3000

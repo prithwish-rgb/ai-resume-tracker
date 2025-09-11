@@ -47,7 +47,7 @@ npx vercel
 Add these in your Vercel project settings:
 
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
 NEXTAUTH_SECRET=[generate with: openssl rand -base64 32]
 NEXTAUTH_URL=https://your-vercel-app.vercel.app
 GITHUB_CLIENT_ID=your_github_oauth_client_id

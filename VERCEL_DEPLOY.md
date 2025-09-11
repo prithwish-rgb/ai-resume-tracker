@@ -35,7 +35,7 @@ Click on **"Environment Variables"** and add each one:
 ```env
 # Database
 MONGODB_URI
-Value: mongodb+srv://username:password@cluster.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
+Value: mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
 
 # NextAuth Configuration
 NEXTAUTH_SECRET

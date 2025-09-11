@@ -79,7 +79,7 @@ Before deploying, ensure you have:
    In Vercel dashboard, go to Settings → Environment Variables and add:
    
    ```env
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/ai-resume-tracker?retryWrites=true&w=majority
    NEXTAUTH_SECRET=your-production-secret-here
    NEXTAUTH_URL=https://your-vercel-app.vercel.app
    GITHUB_CLIENT_ID=your-github-client-id
