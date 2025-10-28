@@ -1,4 +1,4 @@
-# AI Resume Tracker - Improvements Summary
+cd # AI Resume Tracker - Improvements Summary
 
 ## Issues Fixed
 
