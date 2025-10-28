@@ -10,13 +10,13 @@ export const config = {
   },
 };
 
-export async function POST(req: Request) {
-  return new Promise((resolve, reject) => {
+export async function POST(req: Request): Promise<Response> {
+  return new Promise<Response>((resolve, reject) => {
     const form = formidable({ multiples: false });
 
     form.parse(req as any, async (err, fields, files) => {
       if (err) {
-        reject(NextResponse.json({ error: "File parsing error" }, { status: 500 }));
+        resolve(NextResponse.json({ error: "File parsing error" }, { status: 500 }));
         return;
       }
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
         resolve(NextResponse.json({ text }));
       } catch (error) {
-        reject(NextResponse.json({ error: "File processing error" }, { status: 500 }));
+        resolve(NextResponse.json({ error: "File processing error" }, { status: 500 }));
       }
     });
   });
