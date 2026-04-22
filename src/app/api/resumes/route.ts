@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const userId = (session.user as any)?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const userId = (session.user as any)?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -46,13 +46,14 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const userId = (session.user as any)?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id, updates } = await req.json();
+  if (!id || !ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const resumes = await resumesCollection();
-  await resumes.updateOne({ _id: new ObjectId(id), userId }, { $set: { ...updates, updatedAt: new Date() } } as any);
+  await resumes.updateOne({ _id: new ObjectId(id as string), userId }, { $set: { ...updates, updatedAt: new Date() } } as any);
   return NextResponse.json({ success: true });
 }
 
@@ -63,13 +64,14 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const userId = (session.user as any)?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await req.json();
+  if (!id || !ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const resumes = await resumesCollection();
-  await resumes.deleteOne({ _id: new ObjectId(id), userId } as any);
+  await resumes.deleteOne({ _id: new ObjectId(id as string), userId } as any);
   return NextResponse.json({ success: true });
 }
 

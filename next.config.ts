@@ -3,11 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdf-parse"], // ✅ top-level, not under experimental
   
-  // Fix workspace root warning
-  turbopack: {
-    root: __dirname,
-  },
-  outputFileTracingRoot: __dirname,
+  // Fix workspace root warning removed as it may be hanging Windows builds
   
   // Optimize for better performance
   typescript: {

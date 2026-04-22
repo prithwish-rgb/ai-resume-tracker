@@ -14,14 +14,15 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const userId = (session.user as any)?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
   const params = await context.params;
+  if (!params.id || !ObjectId.isValid(params.id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const resumes = await resumesCollection();
-  const resume = await resumes.findOne({ _id: new ObjectId(params.id), userId } as any);
+  const resume = await resumes.findOne({ _id: new ObjectId(params.id as string), userId } as any);
   if (!resume) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: resume });
 }

@@ -8,7 +8,7 @@ import { ObjectId } from "mongodb";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions as any);
-    const userId = (session && typeof session === "object" && "user" in session && (session.user as any)?.id)
+    const userId = (session && typeof session === "object" && "user" in session && session.user?.id)
       ? (session.user as any).id
       : undefined;
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,7 +24,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions as any);
   const userId =
-    session && typeof session === "object" && "user" in session && (session.user as any)?.id
+    session && typeof session === "object" && "user" in session && session.user?.id
       ? (session.user as any).id
       : undefined;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -72,14 +72,15 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const session = await getServerSession(authOptions as any);
   const userId =
-    session && typeof session === "object" && "user" in session && (session.user as any)?.id
+    session && typeof session === "object" && "user" in session && session.user?.id
       ? (session.user as any).id
       : undefined;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id, updates } = await req.json();
+  if (!id || !ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const jobs = await jobsCollection();
   await jobs.updateOne(
-    { _id: new ObjectId(id), userId },
+    { _id: new ObjectId(id as string), userId },
     { $set: { ...updates, updatedAt: new Date() } }
   );
   return NextResponse.json({ success: true });
@@ -88,13 +89,14 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions as any);
   const userId =
-    session && typeof session === "object" && "user" in session && (session.user as any)?.id
+    session && typeof session === "object" && "user" in session && session.user?.id
       ? (session.user as any).id
       : undefined;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
+  if (!id || !ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const jobs = await jobsCollection();
-  await jobs.deleteOne({ _id: new ObjectId(id), userId });
+  await jobs.deleteOne({ _id: new ObjectId(id as string), userId });
   return NextResponse.json({ success: true });
 }
 

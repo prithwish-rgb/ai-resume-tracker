@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection } from "mongodb";
+import { MongoClient, Db, Collection, ObjectId } from "mongodb";
 
 const uri = process.env.MONGODB_URI as string | undefined;
 
@@ -8,8 +8,8 @@ const isVercel = process.env.VERCEL === '1';
 
 const options = isProduction || isVercel ? {
   // Serverless optimized settings
-  serverSelectionTimeoutMS: 5000,
-  connectTimeoutMS: 5000, 
+  serverSelectionTimeoutMS: 3000,
+  connectTimeoutMS: 3000, 
   socketTimeoutMS: 10000,
   maxPoolSize: 1, // Single connection for serverless
   minPoolSize: 0,
@@ -52,7 +52,8 @@ if (!uri) {
     clientPromise = global._mongoClientPromise;
   } else {
     client = new MongoClient(uri, options);
-    clientPromise = client.connect();
+    // Defer the connection so we don't open sockets during SSG build phase
+    clientPromise = Promise.resolve().then(() => client.connect());
   }
 }
 
@@ -82,21 +83,29 @@ export async function connectToDatabase(dbName?: string): Promise<Db> {
 }
 
 // Fallback collections for when DB is not available
-const createFallbackCollection = () => ({
-  find: () => ({ toArray: () => Promise.resolve([]) }),
-  findOne: () => Promise.resolve(null),
-  insertOne: () => Promise.resolve({ insertedId: "fallback" }),
-  updateOne: () => Promise.resolve({ modifiedCount: 0 }),
-  deleteOne: () => Promise.resolve({ deletedCount: 0 }),
-  deleteMany: () => Promise.resolve({ deletedCount: 0 }),
-  countDocuments: () => Promise.resolve(0),
-});
+const createFallbackCollection = () => {
+  const chainable = {
+    toArray: () => Promise.resolve([]),
+    sort: function() { return this; },
+    limit: function() { return this; },
+    skip: function() { return this; },
+  };
+  return {
+    find: () => chainable,
+    findOne: () => Promise.resolve(null),
+    insertOne: () => Promise.resolve({ insertedId: "fallback" }),
+    updateOne: () => Promise.resolve({ modifiedCount: 0 }),
+    deleteOne: () => Promise.resolve({ deletedCount: 0 }),
+    deleteMany: () => Promise.resolve({ deletedCount: 0 }),
+    countDocuments: () => Promise.resolve(0),
+  };
+};
 
 export default clientPromise;
 
 // Collection helpers for clarity and type-safety
 export type JobDoc = {
-  _id?: any;
+  _id?: ObjectId | string;
   userId: string;
   source: "manual" | "url" | "email";
   url?: string;
@@ -117,7 +126,7 @@ export type ResumeBlock = {
 };
 
 export type ResumeDoc = {
-  _id?: any;
+  _id?: ObjectId | string;
   userId: string;
   name: string; // e.g., "Default Resume"
   blocks: ResumeBlock[];
@@ -126,7 +135,7 @@ export type ResumeDoc = {
 };
 
 export type InterviewDoc = {
-  _id?: any;
+  _id?: ObjectId | string;
   userId: string;
   jobId: string;
   stage: string;
@@ -138,7 +147,7 @@ export type InterviewDoc = {
 };
 
 export type DebriefDoc = {
-  _id?: any;
+  _id?: ObjectId | string;
   userId: string;
   jobId: string;
   interviewers?: string[];
@@ -153,9 +162,9 @@ export async function jobsCollection(dbName?: string): Promise<Collection<JobDoc
   try {
     const db = await connectToDatabase(dbName);
     return db.collection<JobDoc>("jobs");
-  } catch (error) {
+  } catch {
     console.warn("Using fallback collection for jobs");
-    return createFallbackCollection() as any;
+    return createFallbackCollection() as unknown as Collection<JobDoc>;
   }
 }
 
@@ -163,9 +172,9 @@ export async function resumesCollection(dbName?: string): Promise<Collection<Res
   try {
     const db = await connectToDatabase(dbName);
     return db.collection<ResumeDoc>("resumes");
-  } catch (error) {
+  } catch {
     console.warn("Using fallback collection for resumes");
-    return createFallbackCollection() as any;
+    return createFallbackCollection() as unknown as Collection<ResumeDoc>;
   }
 }
 
@@ -173,9 +182,9 @@ export async function interviewsCollection(dbName?: string): Promise<Collection<
   try {
     const db = await connectToDatabase(dbName);
     return db.collection<InterviewDoc>("interviews");
-  } catch (error) {
+  } catch {
     console.warn("Using fallback collection for interviews");
-    return createFallbackCollection() as any;
+    return createFallbackCollection() as unknown as Collection<InterviewDoc>;
   }
 }
 
@@ -183,8 +192,8 @@ export async function debriefsCollection(dbName?: string): Promise<Collection<De
   try {
     const db = await connectToDatabase(dbName);
     return db.collection<DebriefDoc>("debriefs");
-  } catch (error) {
+  } catch {
     console.warn("Using fallback collection for debriefs");
-    return createFallbackCollection() as any;
+    return createFallbackCollection() as unknown as Collection<DebriefDoc>;
   }
 }

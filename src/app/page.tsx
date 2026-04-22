@@ -78,26 +78,7 @@ export default function Dashboard() {
       setJobs(data.data || []);
     } catch (error) {
       console.error("Failed to fetch jobs:", error);
-      // Set demo data on error
-      setJobs([
-        {
-          _id: "demo-1",
-          title: "Senior Software Engineer",
-          company: "Tech Corp",
-          status: "applied",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          _id: "demo-2", 
-          title: "Full Stack Developer",
-          company: "StartupXYZ",
-          status: "interview",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-      ]);
-      setDemoMode(true);
+      setJobs([]);
     }
   };
 
@@ -111,12 +92,7 @@ export default function Dashboard() {
       setAnalytics(data);
     } catch (error) {
       console.error("Failed to fetch analytics:", error);
-      // Set demo analytics on error
-      setAnalytics({
-        totals: { total: 2, applied: 1, interview: 1, offer: 0, rejected: 0 },
-        metrics: { applicationToInterviewRate: 0.5 }
-      });
-      setDemoMode(true);
+      setAnalytics(null);
     } finally {
       setLoading(false);
     }
@@ -170,13 +146,13 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#6C63FF]/5 via-[#00C9A7]/5 to-[#6C63FF]/5">
       <div className="w-full mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        {/* Demo Mode Banner */}
-        {demoMode && (
+        {/* Error Banner */}
+        {jobs.length === 0 && !loading && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               <p className="text-yellow-800 text-sm">
-                <strong>Demo Mode:</strong> You&apos;re viewing sample data. To save your data, set up MongoDB Atlas and add MONGODB_URI to your .env.local file.
+                <strong>Database Not Connected:</strong> If you cannot see your data or add new jobs, please verify your MONGODB_URI in Vercel settings and ensure your MongoDB Atlas IP Access List allows connections from anywhere (0.0.0.0/0).
               </p>
             </div>
           </div>

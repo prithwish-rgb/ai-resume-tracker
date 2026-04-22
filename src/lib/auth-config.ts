@@ -2,10 +2,12 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
-import { connectToDatabase } from "@/lib/mongodb";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import clientPromise, { connectToDatabase } from "@/lib/mongodb";
 import { verifyPassword } from "@/lib/auth";
 
 export const authOptions: NextAuthOptions = {
+  adapter: MongoDBAdapter(clientPromise) as any,
   providers: [
     // Credentials (Email/Password)
     CredentialsProvider({
