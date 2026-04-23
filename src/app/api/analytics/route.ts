@@ -6,9 +6,7 @@ import { jobsCollection, interviewsCollection } from "@/lib/mongodb";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions as any);
-    const userId = (session && typeof session === "object" && "user" in session && session.user && typeof session.user === "object" && "id" in session.user)
-      ? (session.user as any).id
-      : undefined;
+    const userId = (session as any)?.user?.id;
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const jobs = await jobsCollection();

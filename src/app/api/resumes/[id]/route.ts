@@ -14,7 +14,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const userId = session.user?.id;
+  const userId = (session as any)?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

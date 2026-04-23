@@ -9,7 +9,7 @@ export async function GET() {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = (session.user as any).id;
+  const userId = (session as any)?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = (session.user as any).id;
+  const userId = (session as any)?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -40,7 +40,7 @@ export async function PATCH(req: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = (session.user as any).id;
+  const userId = (session as any)?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -55,7 +55,7 @@ export async function DELETE(req: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = (session.user as any).id;
+  const userId = (session as any)?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

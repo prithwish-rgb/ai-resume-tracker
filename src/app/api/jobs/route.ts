@@ -8,9 +8,7 @@ import { ObjectId } from "mongodb";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions as any);
-    const userId = (session && typeof session === "object" && "user" in session && session.user?.id)
-      ? (session.user as any).id
-      : undefined;
+    const userId = (session as any)?.user?.id;
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const jobs = await jobsCollection();
     const list = await jobs.find({ userId }).sort({ updatedAt: -1 }).toArray();
@@ -23,10 +21,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions as any);
-  const userId =
-    session && typeof session === "object" && "user" in session && session.user?.id
-      ? (session.user as any).id
-      : undefined;
+  const userId = (session as any)?.user?.id;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const payload = await req.json();
@@ -71,10 +66,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const session = await getServerSession(authOptions as any);
-  const userId =
-    session && typeof session === "object" && "user" in session && session.user?.id
-      ? (session.user as any).id
-      : undefined;
+  const userId = (session as any)?.user?.id;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id, updates } = await req.json();
   if (!id || !ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
@@ -88,10 +80,7 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions as any);
-  const userId =
-    session && typeof session === "object" && "user" in session && session.user?.id
-      ? (session.user as any).id
-      : undefined;
+  const userId = (session as any)?.user?.id;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
   if (!id || !ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
