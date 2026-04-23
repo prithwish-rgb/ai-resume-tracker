@@ -159,41 +159,21 @@ export type DebriefDoc = {
 };
 
 export async function jobsCollection(dbName?: string): Promise<Collection<JobDoc>> {
-  try {
-    const db = await connectToDatabase(dbName);
-    return db.collection<JobDoc>("jobs");
-  } catch {
-    console.warn("Using fallback collection for jobs");
-    return createFallbackCollection() as unknown as Collection<JobDoc>;
-  }
+  const db = await connectToDatabase(dbName);
+  return db.collection<JobDoc>("jobs");
 }
 
 export async function resumesCollection(dbName?: string): Promise<Collection<ResumeDoc>> {
-  try {
-    const db = await connectToDatabase(dbName);
-    return db.collection<ResumeDoc>("resumes");
-  } catch {
-    console.warn("Using fallback collection for resumes");
-    return createFallbackCollection() as unknown as Collection<ResumeDoc>;
-  }
+  const db = await connectToDatabase(dbName);
+  return db.collection<ResumeDoc>("resumes");
 }
 
 export async function interviewsCollection(dbName?: string): Promise<Collection<InterviewDoc>> {
-  try {
-    const db = await connectToDatabase(dbName);
-    return db.collection<InterviewDoc>("interviews");
-  } catch {
-    console.warn("Using fallback collection for interviews");
-    return createFallbackCollection() as unknown as Collection<InterviewDoc>;
-  }
+  const db = await connectToDatabase(dbName);
+  return db.collection<InterviewDoc>("interviews");
 }
 
 export async function debriefsCollection(dbName?: string): Promise<Collection<DebriefDoc>> {
-  try {
-    const db = await connectToDatabase(dbName);
-    return db.collection<DebriefDoc>("debriefs");
-  } catch {
-    console.warn("Using fallback collection for debriefs");
-    return createFallbackCollection() as unknown as Collection<DebriefDoc>;
-  }
+  const db = await connectToDatabase(dbName);
+  return db.collection<DebriefDoc>("debriefs");
 }
