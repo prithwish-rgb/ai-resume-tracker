@@ -83,11 +83,16 @@ export default function InterviewPrepPage() {
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to generate interview questions");
+        return;
+      }
       setQuestions(data);
       setCurrentQuestionIndex(0);
       setAnswers({});
     } catch (error) {
       console.error("Failed to generate questions:", error);
+      alert("An error occurred while generating questions");
     } finally {
       setLoading(false);
     }

@@ -12,14 +12,16 @@ import {
   GraduationCap,
   Code,
   Award,
-  User
+  User,
+  Wand2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { ButtonLoading } from "@/components/ui/loading-spinner";
 
 interface ResumeBlock {
   id: string;
@@ -58,6 +60,11 @@ export default function ResumesPage() {
   const [blockType, setBlockType] = useState<ResumeBlock["type"]>("summary");
   const [blockContent, setBlockContent] = useState("");
   const [blockTags, setBlockTags] = useState("");
+  
+  // Tailor states
+  const [isTailorDialogOpen, setIsTailorDialogOpen] = useState(false);
+  const [tailorJobDescription, setTailorJobDescription] = useState("");
+  const [isTailoring, setIsTailoring] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -96,6 +103,47 @@ export default function ResumesPage() {
       }
     } catch (error) {
       console.error("Failed to create resume:", error);
+    }
+  };
+
+  const handleTailorResume = async () => {
+    if (!selectedResume || !tailorJobDescription.trim()) return;
+    
+    setIsTailoring(true);
+    try {
+      const res = await fetch("/api/tailor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baseResumeId: selectedResume._id, jobDescription: tailorJobDescription }),
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.blocks) {
+        // Create new tailored resume
+        const createRes = await fetch("/api/resumes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: data.name, blocks: data.blocks }),
+        });
+        
+        if (createRes.ok) {
+          const newData = await createRes.json();
+          await fetchResumes();
+          setIsTailorDialogOpen(false);
+          setTailorJobDescription("");
+          const newResume = { _id: newData.id, ...newData.data };
+          setSelectedResume(newResume);
+        } else {
+          alert("Failed to save tailored resume to database.");
+        }
+      } else {
+        alert(data.error || "Failed to tailor resume");
+      }
+    } catch (error) {
+      console.error("Failed to tailor resume:", error);
+      alert("An error occurred while tailoring");
+    } finally {
+      setIsTailoring(false);
     }
   };
 
@@ -358,11 +406,20 @@ export default function ResumesPage() {
                 {/* Resume Header */}
                 <Card>
                   <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle>{selectedResume.name}</CardTitle>
-                      <div className="text-sm text-gray-500">
-                        {selectedResume.blocks.length} sections
+                    <div className="flex justify-between items-center gap-4">
+                      <div>
+                        <CardTitle>{selectedResume.name}</CardTitle>
+                        <div className="text-sm text-gray-500 mt-1">
+                          {selectedResume.blocks.length} sections
+                        </div>
                       </div>
+                      <Button 
+                        onClick={() => setIsTailorDialogOpen(true)}
+                        className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                      >
+                        <Wand2 className="h-4 w-4 mr-2" />
+                        Tailor with AI
+                      </Button>
                     </div>
                   </CardHeader>
                 </Card>
@@ -543,6 +600,40 @@ export default function ResumesPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Tailor Dialog */}
+        <Dialog open={isTailorDialogOpen} onOpenChange={setIsTailorDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tailor Resume with AI</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Paste the Job Description below. AI will optimize your base resume to highlight relevant skills and keywords. A new tailored resume will be created.
+              </p>
+              <div>
+                <Label htmlFor="tailor-jd">Job Description</Label>
+                <Textarea
+                  id="tailor-jd"
+                  value={tailorJobDescription}
+                  onChange={(e) => setTailorJobDescription(e.target.value)}
+                  placeholder="Paste the target job description..."
+                  rows={8}
+                />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsTailorDialogOpen(false)} disabled={isTailoring}>
+                  Cancel
+                </Button>
+                <Button onClick={handleTailorResume} disabled={!tailorJobDescription.trim() || isTailoring}>
+                  {isTailoring && <ButtonLoading />}
+                  {isTailoring ? "Tailoring..." : "Tailor Resume"}
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
       </div>
     </div>
   );

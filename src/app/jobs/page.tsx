@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { 
   Plus, 
@@ -56,6 +56,14 @@ export default function JobsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -94,6 +102,12 @@ export default function JobsPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    if (!formData.url && !formData.emailText && (!formData.title || !formData.company)) {
+      setError("Title and Company are required for manual entry.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const payload: any = { manual: formData };
       if (formData.url) payload.url = formData.url;
@@ -197,13 +211,16 @@ export default function JobsPage() {
     }
   };
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = !searchTerm || 
-      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job => {
+      const search = debouncedSearchTerm.toLowerCase();
+      const matchesSearch = !search || 
+        job.title?.toLowerCase().includes(search) ||
+        job.company?.toLowerCase().includes(search);
+      const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [jobs, debouncedSearchTerm, statusFilter]);
 
   if (status === "loading" || loading) {
     return <PageLoading text="Loading jobs..." />;
@@ -256,6 +273,11 @@ export default function JobsPage() {
                 <DialogTitle>Add New Job Application</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleAddJob} className="space-y-4">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
+                    {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="title">Job Title</Label>

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-config";
 
+import { generateNegotiationAdvice } from "@/lib/ai";
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   
@@ -24,7 +26,13 @@ export async function POST(req: Request) {
     `I’m excited about the team and can sign quickly if we can get closer to these numbers.`
   ].filter(Boolean).join("\n\n");
 
-  return NextResponse.json({ script });
+  try {
+    const aiAdvice = await generateNegotiationAdvice(role || "Software Engineer", company || "the company", location);
+    return NextResponse.json({ script, aiAdvice });
+  } catch (error) {
+    console.error("Negotiation prep error:", error);
+    return NextResponse.json({ script, aiAdvice: null, error: "Failed to generate AI advice" });
+  }
 }
 
 

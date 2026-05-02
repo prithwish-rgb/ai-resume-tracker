@@ -2,7 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise, { connectToDatabase } from "@/lib/mongodb";
 import { verifyPassword } from "@/lib/auth";
 
@@ -44,12 +44,14 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
 
     // GitHub Provider
     GithubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
 
@@ -77,4 +79,5 @@ export const authOptions: NextAuthOptions = {
   },
 
   secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
 };

@@ -49,25 +49,20 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isFetchingData, setIsFetchingData] = useState(false);
   const [dbError, setDbError] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchJobs();
-      fetchAnalytics();
+      setIsFetchingData(true);
+      Promise.all([fetchJobs(), fetchAnalytics()]).finally(() => {
+        setIsFetchingData(false);
+      });
+    } else if (status === "unauthenticated" || status === "loading") {
+      setIsFetchingData(false);
     }
-    
-    // Fallback timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-      }
-    }, 10000); // 10 second timeout
-    
-    return () => clearTimeout(timeout);
-  }, [status, loading]);
+  }, [status]);
 
   const fetchJobs = async () => {
     try {
@@ -97,8 +92,6 @@ export default function Dashboard() {
       console.error("Failed to fetch analytics:", error);
       setAnalytics(null);
       setDbError(true);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -122,7 +115,7 @@ export default function Dashboard() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (status === "loading" || (status === "authenticated" && isFetchingData)) {
     return <PageLoading text="Loading your dashboard..." />;
   }
 

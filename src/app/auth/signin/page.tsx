@@ -47,14 +47,23 @@ function SignInForm() {
             <span className="font-bold">AI Resume Tracker</span>
           </p>
 
+          {error && (
+            <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-xl mb-6 text-sm">
+              {error === "OAuthCallback" ? "Failed to authenticate with provider. Please check database connection." : 
+               error === "AccessDenied" ? "Access was denied." : 
+               `Authentication error: ${error}`}
+            </div>
+          )}
+
           {/* Credentials (Email + Password) */}
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4 text-left">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4 text-left" suppressHydrationWarning>
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none border border-white/20"
+              suppressHydrationWarning
             />
             <input
               type="password"
@@ -62,10 +71,12 @@ function SignInForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none border border-white/20"
+              suppressHydrationWarning
             />
             <button
               type="submit"
               disabled={loading}
+              suppressHydrationWarning
               className={`w-full py-3 px-4 font-semibold rounded-xl shadow-lg transition transform ${
                 loading
                   ? "bg-gray-500 text-gray-300 cursor-not-allowed"
@@ -80,6 +91,7 @@ function SignInForm() {
             <button
               onClick={() => signIn("google", { callbackUrl: "/" })}
               className="w-full py-3 px-4 bg-white text-black font-semibold rounded-xl shadow-lg hover:scale-105 transition transform"
+              suppressHydrationWarning
             >
               Sign in with Google
             </button>
@@ -87,6 +99,7 @@ function SignInForm() {
             <button
               onClick={() => signIn("github", { callbackUrl: "/" })}
               className="w-full py-3 px-4 bg-gray-900 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition transform border border-white/20"
+              suppressHydrationWarning
             >
               Sign in with GitHub
             </button>

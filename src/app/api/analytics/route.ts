@@ -12,11 +12,13 @@ export async function GET() {
     const jobs = await jobsCollection();
     const interviews = await interviewsCollection();
 
-    const total = await jobs.countDocuments({ userId });
-    const applied = await jobs.countDocuments({ userId, status: "applied" });
-    const interview = await jobs.countDocuments({ userId, status: "interview" });
-    const offer = await jobs.countDocuments({ userId, status: "offer" });
-    const rejected = await jobs.countDocuments({ userId, status: "rejected" });
+    const [total, applied, interview, offer, rejected] = await Promise.all([
+      jobs.countDocuments({ userId }),
+      jobs.countDocuments({ userId, status: "applied" }),
+      jobs.countDocuments({ userId, status: "interview" }),
+      jobs.countDocuments({ userId, status: "offer" }),
+      jobs.countDocuments({ userId, status: "rejected" })
+    ]);
 
     const appToInterviewRate = total ? (interview / Math.max(1, applied)) : 0;
 
