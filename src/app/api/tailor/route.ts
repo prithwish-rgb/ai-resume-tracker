@@ -1,45 +1,39 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-config";
-import { resumesCollection, ResumeBlock } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { resumesCollection } from "@/lib/mongodb";
+import { tailorResume, isAIEnabled, AIDisabledError } from "@/lib/ai";
 
-import { tailorResumeBlocks } from "@/lib/ai";
-
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  
-  const userId = (session as any)?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const { jobDescription, baseResumeId } = await req.json();
-  if (!jobDescription) return NextResponse.json({ error: "Missing jobDescription" }, { status: 400 });
-  
-  const resumes = await resumesCollection();
-  
-  let primary;
-  if (baseResumeId) {
-    primary = await resumes.findOne({ _id: new ObjectId(baseResumeId), userId } as any);
-  } else {
-    primary = await resumes.findOne({ userId }, { sort: { updatedAt: -1 } } as any);
-  }
-
-  if (!primary) {
-    return NextResponse.json({ error: "No base resume found" }, { status: 404 });
-  }
-
-  try {
-    const tailoredBlocks = await tailorResumeBlocks(primary.blocks || [], jobDescription);
-    return NextResponse.json({ name: `${primary.name} (Tailored)`, blocks: tailoredBlocks });
-  } catch (error) {
-    console.error("Tailor error:", error);
-    return NextResponse.json({ error: "Failed to tailor resume" }, { status: 500 });
-  }
+async function getUID() {
+  const session = await getServerSession(authOptions as never);
+  return (session as { user?: { id?: string } } | null)?.user?.id ?? null;
 }
 
+export async function POST(req: Request) {
+  try {
+    const uid = await getUID();
+    if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const { jobDescription } = await req.json();
+    if (!jobDescription?.trim())
+      return NextResponse.json({ error: "jobDescription is required" }, { status: 400 });
+
+    const col     = await resumesCollection();
+    const primary = await col.findOne({ userId: uid } as never, { sort: { updatedAt: -1 } } as never) as { blocks?: { type: string; content: string; tags?: string[] }[]; name?: string } | null;
+
+    if (!primary?.blocks?.length)
+      return NextResponse.json({ error: "No resume found. Build one in Resume Builder first." }, { status: 404 });
+
+    const resumeText = primary.blocks
+      .map(b => `[${b.type.toUpperCase()}]\n${b.content}`)
+      .join("\n\n");
+
+    const result = await tailorResume(resumeText, jobDescription);
+    return NextResponse.json({ ...result, sourceName: primary.name ?? "Resume" });
+  } catch (e) {
+    if (e instanceof AIDisabledError)
+      return NextResponse.json({ error: e.message, aiEnabled: false }, { status: 503 });
+    console.error("[tailor.POST]", e);
+    return NextResponse.json({ error: (e as Error).message || "Tailoring failed", aiEnabled: isAIEnabled() }, { status: 500 });
+  }
+}
