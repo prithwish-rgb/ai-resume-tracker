@@ -1,44 +1,25 @@
-// src/lib/gmail.ts (ESM + on-demand)
-import fs from "fs/promises";
-import path from "path";
-import { authenticate } from "@google-cloud/local-auth";
+// src/lib/gmail.ts (serverless-safe OAuth flow)
 import { google } from "googleapis";
 import * as cheerio from "cheerio";
 
-const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
-const TOKEN_PATH = path.join(process.cwd(), "token.json");
-const CREDENTIALS_PATH = path.join(process.cwd(), "credentials.json");
+function buildOAuthClient() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-async function loadSavedCredentialsIfExist(): Promise<any | null> {
-  try {
-    const content = await fs.readFile(TOKEN_PATH, { encoding: "utf-8" });
-    return JSON.parse(content);
-  } catch {
-    return null;
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error(
+      "Gmail import is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN."
+    );
   }
-}
 
-async function saveCredentials(client: any) {
-  const content = await fs.readFile(CREDENTIALS_PATH, { encoding: "utf-8" });
-  const keys = JSON.parse(content);
-  const key = keys.installed || keys.web;
-  const payload = JSON.stringify({
-    type: "authorized_user",
-    client_id: key.client_id,
-    client_secret: key.client_secret,
-    refresh_token: client?.credentials?.refresh_token,
-  });
-  await fs.writeFile(TOKEN_PATH, payload);
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
+  return oauth2Client;
 }
 
 export async function getGmailClient() {
-  let credentials = await loadSavedCredentialsIfExist();
-  if (!credentials) {
-    const client = await authenticate({ scopes: SCOPES, keyfilePath: CREDENTIALS_PATH });
-    if (client.credentials) await saveCredentials(client);
-    credentials = client;
-  }
-  return google.gmail({ version: "v1", auth: credentials as any });
+  return google.gmail({ version: "v1", auth: buildOAuthClient() });
 }
 
 function decodeBase64Url(data?: string): string | null {
@@ -87,4 +68,4 @@ export async function listRecentMessages(limit = 5) {
   return results;
 }
 
-// Note: no top-level execution. Import and call listRecentMessages() from an API route or script.
+// Note: no top-level execution. Import and call listRecentMessages() from an API route.

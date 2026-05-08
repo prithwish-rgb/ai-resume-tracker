@@ -126,16 +126,13 @@ export default function ResumesPage() {
           body: JSON.stringify({ name: data.name, blocks: data.blocks }),
         });
         
-        if (createRes.ok) {
-          const newData = await createRes.json();
-          await fetchResumes();
-          setIsTailorDialogOpen(false);
-          setTailorJobDescription("");
-          const newResume = { _id: newData.id, ...newData.data };
-          setSelectedResume(newResume);
-        } else {
-          alert("Failed to save tailored resume to database.");
-        }
+        if (!createRes.ok) { alert("Failed to save tailored resume."); return; }
+        const { id, data: newData } = await createRes.json();
+        const fresh = await fetch("/api/resumes").then(r => r.json());
+        setResumes(fresh.data || []);
+        setSelectedResume({ _id: id, ...newData });
+        setIsTailorDialogOpen(false);
+        setTailorJobDescription("");
       } else {
         alert(data.error || "Failed to tailor resume");
       }
@@ -145,6 +142,27 @@ export default function ResumesPage() {
     } finally {
       setIsTailoring(false);
     }
+  };
+
+  const handleExport = async (format: "json" | "pdf") => {
+    if (!selectedResume) return;
+    const res = await fetch("/api/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resumeId: selectedResume._id, format }),
+    });
+    if (!res.ok) { alert("Export failed"); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    if (format === "pdf") {
+      const w = window.open(url, "_blank");
+      // Trigger print dialog once loaded
+      w?.addEventListener("load", () => w.print());
+    } else {
+      const a = document.createElement("a");
+      a.href = url; a.download = `${selectedResume.name}.json`; a.click();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
 
   const handleAddBlock = async () => {
@@ -413,13 +431,14 @@ export default function ResumesPage() {
                           {selectedResume.blocks.length} sections
                         </div>
                       </div>
-                      <Button 
-                        onClick={() => setIsTailorDialogOpen(true)}
-                        className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
-                      >
-                        <Wand2 className="h-4 w-4 mr-2" />
-                        Tailor with AI
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => handleExport("json")}>Export JSON</Button>
+                        <Button variant="outline" onClick={() => handleExport("pdf")}>Export PDF</Button>
+                        <Button onClick={() => setIsTailorDialogOpen(true)}
+                                className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white">
+                          <Wand2 className="h-4 w-4 mr-2" /> Tailor with AI
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                 </Card>

@@ -121,7 +121,7 @@ export default function JobsPage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ message: res.statusText }));
-        throw new Error(errorData.message || 'Failed to add job');
+        throw new Error(errorData.error || errorData.message || 'Failed to add job');
       }
 
       await fetchJobs();
@@ -245,12 +245,7 @@ export default function JobsPage() {
               <p className="text-red-800 text-sm">
                 <strong>Error:</strong> {error}
               </p>
-              <button 
-                onClick={() => setError(null)}
-                className="ml-auto text-red-600 hover:text-red-800"
-              >
-                ×
-              </button>
+              <button onClick={() => setError(null)} className="ml-auto text-red-600 hover:text-red-800" aria-label="Dismiss">×</button>
             </div>
           </div>
         )}

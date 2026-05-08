@@ -144,7 +144,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-[#6C63FF]/5 via-[#00C9A7]/5 to-[#6C63FF]/5">
       <div className="w-full mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Error Banner */}
-        {dbError && !loading && (
+        {dbError && !isFetchingData && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
